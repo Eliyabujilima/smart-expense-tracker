@@ -1,0 +1,97 @@
+{
+    "transactions": [
+        {
+            "id": "186ea519-90c6-4411-a00f-cc8c631f9137",
+            "type": "expense",
+            "name": "kitunguu",
+            "amount": 200.0,
+            "category": "Food",
+            "date": "2026-04-20"
+        },
+        {
+            "id": "323b8123-bef0-4a8f-9a0f-d5e98a4f6d0b",
+            "type": "expense",
+            "name": "dagaa",
+            "amount": 1000.0,
+            "category": "Food",
+            "date": "2026-04-20"
+        },
+        {
+            "id": "96d12594-5dfb-44b9-87dd-ec7c22bec8b4",
+            "type": "expense",
+            "name": "chapati",
+            "amount": 500.0,
+            "category": "Food",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "d38a9400-8d88-4921-8524-9e7a7ff28543",
+            "type": "expense",
+            "name": "chinese_mboga",
+            "amount": 700.0,
+            "category": "Food",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "5145a87d-41ef-475e-ae04-c0284ae35fbd",
+            "type": "expense",
+            "name": "caroot",
+            "amount": 300.0,
+            "category": "Food",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "20f96456-6a06-41a6-8583-9b4da7b3eaaa",
+            "type": "expense",
+            "name": "mafuta",
+            "amount": 2000.0,
+            "category": "Utilities",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "58a6667c-136b-494a-a902-6c262b60e286",
+            "type": "expense",
+            "name": "pilipili",
+            "amount": 100.0,
+            "category": "Food",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "d6374fa9-0dd5-458f-b86a-dbd012e706a9",
+            "type": "expense",
+            "name": "vitunguu",
+            "amount": 400.0,
+            "category": "Food",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "fae65f25-479d-4535-9613-7b8f2fd9496b",
+            "type": "income",
+            "name": "present",
+            "amount": 3700.0,
+            "category": "Income",
+            "date": "2026-04-21"
+        },
+        {
+            "id": "93c78f93-7c5a-44f8-acea-31fe64cc1136",
+            "type": "income",
+            "name": "NBC balance",
+            "amount": 50000.0,
+            "category": "Income",
+            "date": "2026-04-21"
+        }
+    ],
+    "categories": [
+        "Food",
+        "Transport",
+        "Entertainment",
+        "Utilities",
+        "Clothing",
+        "Other",
+        "house"
+    ],
+    "budgets": {
+        "Food": 10000.0,
+        "Utilities": 10000.0
+    }
+}

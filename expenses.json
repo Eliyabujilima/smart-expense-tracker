@@ -1,0 +1,43 @@
+{
+    "expenses": [
+        {
+            "name": "chapati",
+            "amount": 500.0,
+            "category": "Food",
+            "date": "2026-04-16"
+        },
+        {
+            "name": "nyanya",
+            "amount": 500.0,
+            "category": "Food",
+            "date": "2026-04-16"
+        },
+        {
+            "name": "mchicha",
+            "amount": 500.0,
+            "category": "Food",
+            "date": "2026-04-16"
+        },
+        {
+            "name": "sabuni",
+            "amount": 700.0,
+            "category": "Utilities",
+            "date": "2026-04-16"
+        },
+        {
+            "name": "chapati",
+            "amount": 500.0,
+            "category": "Food",
+            "date": "2026-04-17"
+        }
+    ],
+    "categories": [
+        "Food",
+        "Transport",
+        "Entertainment",
+        "Utilities",
+        "Clothing",
+        "Other",
+        "chinese"
+    ]
+}

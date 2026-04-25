@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker - History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<h1>📜 Transaction History</h1>
+
+<form method="GET" action="/search">
+    <input type="date" name="date">
+    <button type="submit">Search</button>
+</form>
+
+<br>
+
+<form method="GET" action="/range">
+    From: <input type="date" name="start">
+    To: <input type="date" name="end">
+    <button type="submit">Filter</button>
+</form>
+
+<br>
+
+<table border="1">
+<tr>
+    <th>Type</th>
+    <th>Name</th>
+    <th>Amount</th>
+    <th>Category</th>
+    <th>Date</th>
+</tr>
+
+{% for t in transactions %}
+<tr>
+    <td>{{ t.type }}</td>
+    <td>{{ t.name }}</td>
+    <td>{{ t.amount }}</td>
+    <td>{{ t.category }}</td>
+    <td>{{ t.date }}</td>
+</tr>
+{% endfor %}
+</table>
+<a href="/">⬅ Back to Dashboard</a>
+</body>
+</html>

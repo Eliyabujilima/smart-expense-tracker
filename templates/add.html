@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Expense</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function suggestCategory() {
+            let name = document.getElementById("name").value.toLowerCase();
+            let suggestion = document.getElementById("suggestion");
+
+            if (name.includes("trouser") || name.includes("shirt")) {
+                suggestion.innerHTML = "Suggested: Clothing";
+            } else if (name.includes("bus") || name.includes("fare")) {
+                suggestion.innerHTML = "Suggested: Transport";
+            } else if (name.includes("meal") || name.includes("food")) {
+                suggestion.innerHTML = "Suggested: Food";
+            } else {
+                suggestion.innerHTML = "Suggested: Other";
+            }
+        }
+
+
+        function toggleCategoryBox() {
+            let category = document.getElementById("category").value;
+            let box = document.getElementById("newCategoryBox");
+
+            if (category === "__new__") {
+                box.style.display = "block";
+            } else {
+                box.style.display = "none";
+            }
+        }
+
+        function toggleFoodBreakdown() {
+            let category = document.getElementById("category").value;
+            let foodBox = document.getElementById("food-breakdown");
+
+            if (category === "Food") {
+                foodBox.style.display = "block";
+            } else {
+                foodBox.style.display = "none";
+            }
+        }
+
+        function calculateFoodTotal() {
+            let b = parseFloat(document.getElementsByName("breakfast")[0].value) || 0;
+            let l = parseFloat(document.getElementsByName("lunch")[0].value) || 0;
+            let d = parseFloat(document.getElementsByName("dinner")[0].value) || 0;
+
+            let total = b + l + d;
+
+            console.log("Food total:", total);
+        }
+    </script>
+</head>
+
+<body>
+
+<h1>Add Expense</h1>
+
+<form method="POST">
+
+    <!-- NAME -->
+    <label>Expense Name</label>
+    <input type="text" id="name" name="name" placeholder="e.g. Lunch, Bus fare" onkeyup="suggestCategory()" required>
+    <small id="suggestion" style="color: gray;"></small>
+
+    <!-- CATEGORY -->
+    <label>Category</label>
+    <select id="category" name="category"
+        onchange="toggleCategoryBox(); toggleFoodBreakdown();" required>
+
+    {% for cat in categories %}
+        <option value="{{ cat }}">{{ cat }}</option>
+    {% endfor %}
+
+    <option value="__new__">➕ Add New Category</option>
+</select>
+
+    <!-- NEW CATEGORY -->
+<div id="newCategoryBox" style="display:none;">
+    <label>New Category</label>
+    <input type="text" name="new_category" placeholder="Enter new category">
+</div>
+
+    <!-- FOOD BREAKDOWN -->
+<div id="food-breakdown" style="display:none;">
+    <label>Food Breakdown (Optional)</label>
+
+    <input type="number" name="breakfast" placeholder="Breakfast (TSh)" oninput="calculateFoodTotal()">
+    <input type="number" name="lunch" placeholder="Lunch (TSh)" oninput="calculateFoodTotal()">
+    <input type="number" name="dinner" placeholder="Dinner (TSh)" oninput="calculateFoodTotal()">
+</div>
+
+    <!-- AMOUNT -->
+    <label>Amount (TSh)</label>
+    <input type="number" name="amount" placeholder="Enter amount" required>
+
+    <button type="submit">💾 Save Expense</button>
+
+</form>
+
+<br>
+<a href="/">⬅ Back</a>
+
+</body>
+</html>

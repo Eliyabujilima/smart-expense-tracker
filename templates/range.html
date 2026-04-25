@@ -1,0 +1,40 @@
+<html>
+<head>
+    <title>Range Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<h1>📅 Range Analysis</h1>
+
+<form method="POST">
+    <label>From:</label>
+    <input type="date" name="start" required>
+
+    <label>To:</label>
+    <input type="date" name="end" required>
+
+    <button type="submit">Analyze</button>
+</form>
+
+<h3>Total Spending: {{ total }} TSh</h3>
+
+<table border="1">
+<tr>
+    <th>Name</th>
+    <th>Amount</th>
+    <th>Category</th>
+    <th>Date</th>
+</tr>
+
+{% for exp in results %}
+<tr>
+    <td>{{ exp.name }}</td>
+    <td>{{ exp.amount }}</td>
+    <td>{{ exp.category }}</td>
+    <td>{{ exp.date }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<br>
+<a href="/">⬅ Back</a>
+</body>
+</html>

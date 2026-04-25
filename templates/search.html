@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Expenses</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>🔍 Search by Date</h1>
+
+<form method="POST">
+    <input type="date" name="date" required>
+    <button type="submit">Search</button>
+</form>
+
+<h3>Total: {{ total }} TSh</h3>
+
+<table border="1">
+
+<tr>
+    <th>Name</th>
+    <th>Amount</th>
+    <th>Category</th>
+    <th>Date</th>
+    <th>Actions</th>
+</tr>
+
+{% for exp in expenses %}
+<tr>
+    <td>{{ exp.name }}</td>
+    <td>{{ exp.amount }}</td>
+    <td>{{ exp.category }}</td>
+    <td>{{ exp.date }}</td>
+    <td>
+        <a href="/edit/{{ loop.index0 }}">✏️ Edit</a>
+        <a href="/delete/{{ loop.index0 }}">🗑 Delete</a>
+    </td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+<a href="/">⬅ Back</a>
+</body>
+</html>

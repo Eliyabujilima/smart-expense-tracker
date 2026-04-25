@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Budget</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>💰 Set Budget</h1>
+
+<form method="POST">
+
+    <label>Category</label>
+
+<select name="category" id="category" onchange="toggleCategoryBox()" required>
+    {% for cat in categories %}
+        <option value="{{ cat }}">{{ cat }}</option>
+    {% endfor %}
+    <option value="__new__">➕ Add New Category</option>
+</select>
+
+<br><br>
+
+<!-- NEW CATEGORY INPUT -->
+<div id="newCategoryBox" style="display:none;">
+    <label>New Category</label>
+    <input type="text" name="new_category" placeholder="Enter new category">
+</div>
+    <label>Budget Amount (TSh)</label>
+    <input type="number" name="amount" placeholder="Enter budget amount" required>
+
+    <br><br>
+
+    <button type="submit">💾 Save Budget</button>
+
+</form>
+
+<br>
+
+<a href="/">⬅ Back to Dashboard</a>
+
+<script>
+        function toggleCategoryBox() {
+            let select = document.getElementById("category");
+            let box = document.getElementById("newCategoryBox");
+
+            if (select.value === "__new__") {
+                box.style.display = "block";
+            } else {
+                box.style.display = "none";
+            }
+        }
+</script>
+</body>
+</html>

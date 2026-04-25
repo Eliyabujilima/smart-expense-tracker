@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Transaction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+
+<h1>Edit Transaction</h1>
+
+<form method="POST">
+    <input type="text" name="name" value="{{ t.name }}">
+    <br><br>
+
+    <input type="number" name="amount" value="{{ t.amount }}">
+    <br><br>
+
+    <select name="category">
+        {% for cat in categories %}
+            <option value="{{ cat }}" {% if cat == t.category %}selected{% endif %}>
+                {{ cat }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <button type="submit">Update</button>
+</form>
+
+<a href="/">⬅ Back</a>
+</body>
+</html>

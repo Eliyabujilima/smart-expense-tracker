@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker - Add Income</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h1>Add Income</h1>
+
+<form method="POST">
+    <input type="text" name="name" placeholder="Income source">
+    <input type="number" name="amount" placeholder="Amount">
+    <button type="submit">Save</button>
+</form>
+
+<a href="/">⬅ Back</a>
+</body>
+</html>

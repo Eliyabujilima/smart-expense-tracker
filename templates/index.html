@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<p>{{ greeting }}, {{ username }} 👋</p>
+<div class="header">
+    <h2>💰 Smart Expense Tracker</h2>
+
+    <div class="user-info">
+        👤 Welcome, <strong>{{ username }}</strong>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- ================= SUMMARY ================= -->
+<h3>📅 Summary Spending</h3>
+<div class="cards">
+
+    <div class="card">
+        <h4>This Year</h4>
+        <p>{{ yearly }} TSh</p>
+    </div>
+
+    <div class="card">
+        <h4>This Month</h4>
+        <p>{{ monthly }} TSh</p>
+    </div>
+
+    <div class="card">
+        <h4>Today</h4>
+        <p>{{ today_total }} TSh</p>
+    </div>
+
+</div>
+
+<!-- ================= WALLET ================= -->
+<h2>💰 Wallet Summary</h2>
+
+<a href="/set-budget">💰 Set Budget</a>
+
+<p>
+    <strong>Balance:</strong>
+    {% if balance < 0 %}
+        <span style="color:red;">{{ balance }} TSh (Overspent)</span>
+    {% else %}
+        <span style="color:green;">{{ balance }} TSh</span>
+    {% endif %}
+</p>
+
+<p>Total Income: {{ income }} TSh</p>
+<p>Total Expenses: {{ expense }} TSh</p>
+
+<!-- ================= ACTIONS ================= -->
+<div class="actions">
+    <a href="{{ url_for('add_income') }}">➕ Income</a>
+    <a href="/add">➖ Expense</a>
+    <a href="/history">📜 History</a>
+    <a href="/range">📊 Analysis</a>
+    <a href="/search">🔍 Search</a>
+</div>
+
+<!-- ================= INSIGHTS ================= -->
+<h2>🧠 Smart Insights</h2>
+
+<ul>
+{% for i in insights %}
+    <li style="margin:5px 0; font-size:16px;">
+        {{ i }}
+    </li>
+{% endfor %}
+</ul>
+<!-- ================= TABLE ================= -->
+<h2>Transactions</h2>
+
+<table border="1">
+<tr>
+    <th>Type</th>
+    <th>Name</th>
+    <th>Amount</th>
+    <th>Category</th>
+    <th>Date</th>
+    <th>Actions</th>
+</tr>
+
+{% for t in transactions %}
+<tr>
+    <td>
+        {% if t.type == "income" %}
+            <span style="color:green;">💰 Income</span>
+        {% else %}
+            <span style="color:red;">💸 Expense</span>
+        {% endif %}
+    </td>
+
+    <td>{{ t.name }}</td>
+    <td>{{ t.amount }}</td>
+    <td>{{ t.category }}</td>
+    <td>{{ t.date }}</td>
+
+    <td>
+        <a href="/edit/{{ t.id }}">✏️</a>
+        <a href="/delete/{{ t.id }}">🗑</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<!-- ================= CHART ================= -->
+<h2>📊 Spending by Category</h2>
+
+<div style="width: 350px; height: 350px; margin: auto;">
+    <canvas id="expenseChart"></canvas>
+    <canvas id="barChart"></canvas>
+    <canvas id="lineChart"></canvas>
+</div>
+
+<!-- ================= WARNINGS ================= -->
+<h2>⚠️ Budget Alerts</h2>
+
+{% if warnings and warnings|length > 0 %}
+    {% for w in warnings %}
+        <p style="color:red;">{{ w }}</p>
+    {% endfor %}
+{% else %}
+    <p style="color:green;">No budget warnings </p>
+{% endif %}
+
+<!-- ================= BUDGET INSIGHTS ================= -->
+ <h2>🧠 Budget Intelligence</h2>
+
+{% for b in budget_insights %}
+    <p>{{ b }}</p>
+{% endfor %}
+
+<!-- ================= BUDGET USAGE ================= -->
+<h3>📦 Budget Usage</h3>
+
+<div class="cards">
+    {% for cat, data in budget_data.items() %}
+        <div class="card">
+            <h4>{{ cat }}</h4>
+
+            <p>{{ data.spent }} / {{ data.limit }} TSh</p>
+
+            <p style="
+                color:
+                {% if data.percent >= 100 %} red
+                {% elif data.percent >= 80 %} orange
+                {% else %} green
+                {% endif %}
+            ">
+                {{ data.percent }}%
+            </p>
+
+        </div>
+    {% endfor %}
+</div>
+<!-- ================= CHART SCRIPT ================= -->
+<script>
+
+// =====================
+// CATEGORY PIE CHART
+// =====================
+const data = {{ chart_data | tojson }};
+
+new Chart(document.getElementById('expenseChart'), {
+    type: 'pie',
+    data: {
+        labels: Object.keys(data),
+        datasets: [{
+            data: Object.values(data),
+            backgroundColor: [
+                '#4CAF50',
+                '#2196F3',
+                '#FF9800',
+                '#E91E63',
+                '#9C27B0',
+                '#FFC107'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+
+// =====================
+// BAR CHART (Income vs Expense)
+// =====================
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Income', 'Expenses'],
+        datasets: [{
+            data: [{{ income }}, {{ expense }}],
+            backgroundColor: ['#4CAF50', '#F44336']
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+
+
+// =====================
+// LINE CHART (TREND)
+// =====================
+const trend = {{ trend_data | tojson }};
+
+new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+        labels: Object.keys(trend),
+        datasets: [{
+            label: "Expenses Trend",
+            data: Object.values(trend),
+            borderColor: '#2196F3',
+            fill: false,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+</script>
+</body>
+</html>
