@@ -28,6 +28,10 @@ table {
     border-collapse: collapse;
     margin-top: 20px;
     background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow-x: auto;
+    display: block;
 }
 
 th, td {
@@ -65,7 +69,7 @@ input, select {
     width: 100%;
     padding: 10px;
     margin-top: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
@@ -78,6 +82,7 @@ button {
     border: none;
     border-radius: 5px;
     font-weight: bold;
+    margin-top: 5px;
 }
 
 button:hover {
@@ -103,15 +108,16 @@ small {
 
 .card {
     background: #f5f5f5;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
-    flex: 1;
+    flex: 1 1 200px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .dashboard {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    gap: 10px;
 }
 /* AUTH PAGES */
 
@@ -238,4 +244,9 @@ small {
     height: 100%;
     background: #4CAF50;
     border-radius: 10px;
+}
+/* Make layout responsive */
+.container {
+    width: 90%;
+    margin: auto;
 }
