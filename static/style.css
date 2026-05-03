@@ -1,6 +1,9 @@
 body {
     background: #f4f6f9;
-    font-family: Arial, sans-serif;
+     margin: 0;
+    padding: 0;
+    font-family: Arial;
+    background: #0f172a;
 }
 
 h1 {
@@ -122,18 +125,21 @@ small {
 /* AUTH PAGES */
 
 .auth-body {
-    background: linear-gradient(135deg, #4CAF50, #2196F3);
-    font-family: Arial;
+    margin: 0;
+    padding: 0;
+    background: #0f172a;
+    font-family: Arial, sans-serif;
 }
 
 .auth-container {
-    width: 300px;
-    margin: 100px auto;
-    padding: 30px;
-    background: white;
+    width: 90%;
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    background: #1e293b;
     border-radius: 10px;
+    color: white;
     text-align: center;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
 
 .auth-container h2 {
@@ -141,25 +147,23 @@ small {
 }
 
 .auth-container input {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: none;
 }
 
-.auth-container button {
+.auth-container input {
     width: 100%;
-    padding: 10px;
-    background: #4CAF50;
-    color: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 .auth-container button:hover {
-    background: #45a049;
+    background: #16a34a;
 }
 
 .auth-container a {
@@ -249,4 +253,24 @@ small {
 .container {
     width: 90%;
     margin: auto;
+}
+.login-container {
+    width: 90%;
+    max-width: 400px;
+    margin: auto;
+    margin-top: 80px;
+    padding: 20px;
+    background: #1e293b;
+    border-radius: 10px;
+    color: white;
+}
+@media (max-width: 768px) {
+    .auth-container {
+        margin-top: 40px;
+        padding: 15px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
 }
