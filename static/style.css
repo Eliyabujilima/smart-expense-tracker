@@ -274,3 +274,13 @@ small {
         font-size: 20px;
     }
 }
+ol {
+    padding-left: 20px;
+}
+
+ol li {
+    margin-bottom: 15px;
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 8px;
+}

@@ -359,8 +359,14 @@ def logout():
 def calculator():
     return render_template('calculator.html')
 
+#   help route
+@app.route('/help')
+def help_page():
+    return render_template('help.html')
+
 # ----------------------
 # ERRORS
+
 # ----------------------
 @app.errorhandler(500)
 def internal_error(e):
