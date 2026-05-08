@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import os
 
@@ -10,6 +10,93 @@ from analytics.engine import *
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "super_secret_key_123")
+
+# Initialize database
+def init_db():
+    conn, is_mysql = get_db_connection()
+    if conn is None:
+        return
+    cursor = conn.cursor(dictionary=True) if is_mysql else conn.cursor()
+    if is_mysql:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                type VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                category VARCHAR(255) NOT NULL,
+                date DATE NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS budgets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                category VARCHAR(255) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) UNIQUE NOT NULL
+            )
+        ''')
+    else:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                name TEXT NOT NULL,
+                amount REAL NOT NULL,
+                category TEXT NOT NULL,
+                date DATE NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS budgets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                category TEXT NOT NULL,
+                amount REAL NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS categories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL
+            )
+        ''')
+    conn.commit()
+    # Insert default categories if not exist
+    if is_mysql:
+        cursor.execute("INSERT IGNORE INTO categories (name) VALUES ('Food'), ('Transport'), ('Entertainment'), ('Utilities'), ('Other')")
+    else:
+        cursor.execute("INSERT OR IGNORE INTO categories (name) VALUES ('Food'), ('Transport'), ('Entertainment'), ('Utilities'), ('Other')")
+    conn.commit()
+    conn.close()
+
+init_db()
 
 # ----------------------
 # HELPER
@@ -44,14 +131,14 @@ def home():
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
-    cursor.execute("SELECT * FROM transactions WHERE user_id=%s", (session["user_id"],))
+    cursor.execute("SELECT * FROM transactions WHERE user_id=?", (session["user_id"],))
     transactions = cursor.fetchall()
 
     cursor.execute(
-            "SELECT * FROM budgets WHERE user_id=%s",
+            "SELECT * FROM budgets WHERE user_id=?",
             (session["user_id"],)
         )
 
@@ -91,7 +178,7 @@ def home():
     print("HOME ROUTE END")
     return render_template(
         "index.html",
-        transactions=[t for t in transactions if t["date"].strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d")],
+        transactions=[t for t in transactions if safe_date(t["date"]) == datetime.now().strftime("%Y-%m-%d")],
         income=income,
         expense=expense,
         balance=balance,
@@ -120,39 +207,42 @@ def add():
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
     cursor.execute("SELECT name FROM categories")
-    categories = [r["name"] for r in cursor.fetchall()]
+    categories = [r[0] for r in cursor.fetchall()]
 
     if request.method == "POST":
         try:
-            id = str(uuid.uuid4())
             name = request.form["name"]
 
             category = request.form.get("category")
             if category == "__new__":
                 category = request.form.get("new_category")
+                # Insert new category if not exists
+                cursor.execute("INSERT OR IGNORE INTO categories (name) VALUES (?)", (category,))
 
             if not category:
                 category = "Other"
 
-            if category == "Food":
-                amount = (
-                    float(request.form.get("breakfast", 0) or 0) +
-                    float(request.form.get("lunch", 0) or 0) +
-                    float(request.form.get("dinner", 0) or 0)
+            amount = float(request.form.get("amount", 0) or 0)
+
+            # Check if this is an edit operation
+            edit_id = request.form.get("edit_id")
+            if edit_id:
+                # Update existing transaction
+                cursor.execute(
+                    "UPDATE transactions SET name=?, amount=?, category=? WHERE id=? AND user_id=?",
+                    (name, amount, category, edit_id, session["user_id"])
                 )
             else:
-                amount = float(request.form.get("amount", 0) or 0)
-
-            date = datetime.now().strftime("%Y-%m-%d")
-
-            cursor.execute("""
-                INSERT INTO transactions (id, type, name, amount, category, date, user_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (id, "expense", name, amount, category, date, session["user_id"]))
+                # Insert new transaction
+                date = datetime.now().strftime("%Y-%m-%d")
+                cursor.execute("""
+                    INSERT INTO transactions (type, name, amount, category, date, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, ("expense", name, amount, category, date, session["user_id"]))
 
             conn.commit()
 
@@ -177,18 +267,17 @@ def add_income():
 
     if request.method == "POST":
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+            conn, _ = get_db_connection()
+            cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
-            id = str(uuid.uuid4())
             name = request.form["name"]
             amount = float(request.form.get("amount", 0) or 0)
             date = datetime.now().strftime("%Y-%m-%d")
 
             cursor.execute("""
-                INSERT INTO transactions (id, type, name, amount, category, date, user_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (id, "income", name, amount, "Income", date, session["user_id"]))
+                INSERT INTO transactions (type, name, amount, category, date, user_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("income", name, amount, "Income", date, session["user_id"]))
 
             conn.commit()
 
@@ -210,18 +299,44 @@ def delete(id):
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
     cursor.execute(
-        "DELETE FROM transactions WHERE id=%s AND user_id=%s",
+        "DELETE FROM transactions WHERE id=? AND user_id=?",
         (id, session["user_id"])
     )
 
     conn.commit()
     conn.close()
 
-    return redirect("/")
+    return redirect("/history")
+
+# ----------------------
+# EDIT
+# ----------------------
+@app.route("/edit/<id>")
+def edit(id):
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
+
+    cursor.execute("SELECT * FROM transactions WHERE id=? AND user_id=?", (id, session["user_id"]))
+    transaction = cursor.fetchone()
+
+    conn.close()
+
+    if transaction:
+        # Redirect to add page with transaction data as query parameters
+        return redirect(f"/add?edit_id={transaction['id']}&name={transaction['name']}&amount={transaction['amount']}&category={transaction['category']}")
+    else:
+        return redirect("/")
+
+# ----------------------
+# DELETE
+# ----------------------
 
 # ----------------------
 # HISTORY
@@ -231,15 +346,32 @@ def history():
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
-    cursor.execute("SELECT * FROM transactions WHERE user_id=%s", (session["user_id"],))
-    transactions = cursor.fetchall()
+    cursor.execute("SELECT * FROM transactions WHERE user_id=? ORDER BY date DESC", (session["user_id"],))
+    all_transactions = cursor.fetchall()
 
     conn.close()
 
-    return render_template("history.html", transactions=transactions)
+    period = request.args.get('period', 'all')
+    now = datetime.now()
+
+    if period == 'today':
+        transactions = [t for t in all_transactions if datetime.strptime(t['date'], '%Y-%m-%d').date() == now.date()]
+    elif period == 'week':
+        start_of_week = now - timedelta(days=now.weekday())
+        transactions = [t for t in all_transactions if datetime.strptime(t['date'], '%Y-%m-%d').date() >= start_of_week.date()]
+    elif period == 'month':
+        start_of_month = now.replace(day=1)
+        transactions = [t for t in all_transactions if datetime.strptime(t['date'], '%Y-%m-%d').date() >= start_of_month.date()]
+    elif period == 'year':
+        start_of_year = now.replace(month=1, day=1)
+        transactions = [t for t in all_transactions if datetime.strptime(t['date'], '%Y-%m-%d').date() >= start_of_year.date()]
+    else:
+        transactions = all_transactions
+
+    return render_template("history.html", transactions=transactions, period=period)
 
 # ----------------------
 # SET BUDGET
@@ -249,12 +381,12 @@ def set_budget():
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
     # GET categories
     cursor.execute("SELECT name FROM categories")
-    categories = [r["name"] for r in cursor.fetchall()]
+    categories = [r[0] for r in cursor.fetchall()]
 
     if request.method == "POST":
         cursor = conn.cursor()
@@ -275,12 +407,12 @@ def set_budget():
         # 🔥 FIX: FORCE UPDATE PER USER
         cursor.execute("""
             DELETE FROM budgets
-            WHERE user_id=%s AND category=%s
+            WHERE user_id=? AND category=?
         """, (session["user_id"], category))
 
         cursor.execute("""
             INSERT INTO budgets (user_id, category, amount)
-            VALUES (%s, %s, %s)
+            VALUES (?, ?, ?)
         """, (session["user_id"], category, amount))
 
         conn.commit()
@@ -296,27 +428,24 @@ def set_budget():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        conn, _ = get_db_connection()
+        cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
         username = request.form["username"]
         password = generate_password_hash(request.form["password"])
 
         # CHECK IF USER EXISTS
-        cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
         existing_user = cursor.fetchone()
 
         if existing_user:
             conn.close()
             return "⚠️ Username already exists, try another"
 
-        user_id = str(uuid.uuid4())
-
-        cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO users (id, username, password)
-            VALUES (%s, %s, %s)
-        """, (user_id, username, password))
+            INSERT INTO users (username, password)
+            VALUES (?, ?)
+        """, (username, password))
 
         conn.commit()
         conn.close()
@@ -328,13 +457,13 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        conn, _ = get_db_connection()
+        cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
 
         username = request.form["username"]
         password = request.form["password"]
 
-        cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
         user = cursor.fetchone()
 
         conn.close()
@@ -363,6 +492,72 @@ def calculator():
 @app.route('/help')
 def help_page():
     return render_template('help.html')
+
+# ----------------------
+# CHARTS
+# ----------------------
+@app.route('/charts')
+def charts():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
+
+    cursor.execute("SELECT * FROM transactions WHERE user_id=?", (session["user_id"],))
+    transactions = cursor.fetchall()
+
+    cursor.execute(
+        "SELECT * FROM budgets WHERE user_id=?",
+        (session["user_id"],)
+    )
+
+    budgets_data = cursor.fetchall()
+
+    budgets = {
+        b["category"].strip().title(): b["amount"]
+        for b in budgets_data
+    }
+    conn.close()
+
+    income = total_income(transactions)
+    expense = total_expense(transactions)
+    trend_data = monthly_trend(transactions)
+    budget_data = budget_usage(transactions, budgets)
+    chart_data = category_chart_data(transactions)
+
+    return render_template('charts.html', income=income, expense=expense, trend_data=trend_data, budget_data=budget_data, chart_data=chart_data)
+
+# ----------------------
+# EXPORT
+# ----------------------
+@app.route('/export')
+def export():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn, _ = get_db_connection()
+    cursor = conn.cursor(dictionary=True) if _ else conn.cursor()
+
+    cursor.execute("SELECT * FROM transactions WHERE user_id=? ORDER BY date DESC", (session["user_id"],))
+    transactions = cursor.fetchall()
+    conn.close()
+
+    import csv
+    from io import StringIO
+
+    si = StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['Type', 'Name', 'Amount', 'Category', 'Date'])
+
+    for t in transactions:
+        writer.writerow([t['type'], t['name'], t['amount'], t['category'], t['date']])
+
+    output = si.getvalue()
+    si.close()
+
+    from flask import Response
+    return Response(output, mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=transactions.csv'})
 
 # ----------------------
 # ERRORS

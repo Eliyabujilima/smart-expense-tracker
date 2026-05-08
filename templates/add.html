@@ -31,48 +31,30 @@
                 box.style.display = "none";
             }
         }
-
-        function toggleFoodBreakdown() {
-            let category = document.getElementById("category").value;
-            let foodBox = document.getElementById("food-breakdown");
-
-            if (category === "Food") {
-                foodBox.style.display = "block";
-            } else {
-                foodBox.style.display = "none";
-            }
-        }
-
-        function calculateFoodTotal() {
-            let b = parseFloat(document.getElementsByName("breakfast")[0].value) || 0;
-            let l = parseFloat(document.getElementsByName("lunch")[0].value) || 0;
-            let d = parseFloat(document.getElementsByName("dinner")[0].value) || 0;
-
-            let total = b + l + d;
-
-            console.log("Food total:", total);
-        }
     </script>
 </head>
 
 <body>
 
-<h1>Add Expense</h1>
+<h1>{% if request.args.get('edit_id') %}Edit Expense{% else %}Add Expense{% endif %}</h1>
 
 <form method="POST">
+    {% if request.args.get('edit_id') %}
+    <input type="hidden" name="edit_id" value="{{ request.args.get('edit_id') }}">
+    {% endif %}
 
     <!-- NAME -->
     <label>Expense Name</label>
-    <input type="text" id="name" name="name" placeholder="e.g. Lunch, Bus fare" onkeyup="suggestCategory()" required>
+    <input type="text" id="name" name="name" placeholder="e.g. Lunch, Bus fare" onkeyup="suggestCategory()" value="{{ request.args.get('name', '') }}" required>
     <small id="suggestion" style="color: gray;"></small>
 
     <!-- CATEGORY -->
     <label>Category</label>
     <select id="category" name="category"
-        onchange="toggleCategoryBox(); toggleFoodBreakdown();" required>
+        onchange="toggleCategoryBox();" required>
 
     {% for cat in categories %}
-        <option value="{{ cat }}">{{ cat }}</option>
+        <option value="{{ cat }}" {% if cat == request.args.get('category') %}selected{% endif %}>{{ cat }}</option>
     {% endfor %}
 
     <option value="__new__">➕ Add New Category</option>
@@ -84,20 +66,13 @@
     <input type="text" name="new_category" placeholder="Enter new category">
 </div>
 
-    <!-- FOOD BREAKDOWN -->
-<div id="food-breakdown" style="display:none;">
-    <label>Food Breakdown (Optional)</label>
-
-    <input type="number" name="breakfast" placeholder="Breakfast (TSh)" oninput="calculateFoodTotal()">
-    <input type="number" name="lunch" placeholder="Lunch (TSh)" oninput="calculateFoodTotal()">
-    <input type="number" name="dinner" placeholder="Dinner (TSh)" oninput="calculateFoodTotal()">
-</div>
-
     <!-- AMOUNT -->
+    <div id="amount-box">
     <label>Amount (TSh)</label>
-    <input type="number" name="amount" placeholder="Enter amount" required>
+    <input type="number" name="amount" placeholder="Enter amount" value="{{ request.args.get('amount', '') }}" required>
+    </div>
 
-    <button type="submit">💾 Save Expense</button>
+    <button type="submit">{% if request.args.get('edit_id') %}💾 Update Expense{% else %}💾 Save Expense{% endif %}</button>
 
 </form>
 

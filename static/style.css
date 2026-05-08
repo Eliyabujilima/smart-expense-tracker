@@ -42,6 +42,31 @@ th, td {
     text-align: center;
 }
 
+/* Mobile table styling */
+@media (max-width: 768px) {
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 6px 4px;
+        white-space: nowrap;
+    }
+
+    /* Make actions column more touch-friendly */
+    td:last-child {
+        min-width: 80px;
+    }
+
+    td:last-child a {
+        display: inline-block;
+        margin: 0 2px;
+        padding: 4px 6px;
+        font-size: 14px;
+        border-radius: 3px;
+    }
+}
+
 th {
     background-color: #007bff;
     color: white;
@@ -190,15 +215,22 @@ small {
 }
 .actions {
     margin: 20px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
 }
 
 .actions a {
     padding: 10px 15px;
     background: #4CAF50;
     color: white;
-    margin-right: 10px;
     border-radius: 5px;
     text-decoration: none;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 /* ===== BUDGET CARDS ===== */
 .budget-cards {
@@ -272,6 +304,16 @@ small {
 
     h2 {
         font-size: 20px;
+    }
+
+    .actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .actions a {
+        padding: 8px 10px;
+        font-size: 12px;
     }
 }
 ol {

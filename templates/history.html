@@ -6,6 +6,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <h1>📜 Transaction History</h1>
 
+<div class="periods">
+    <a href="/history?period=all">All</a>
+    <a href="/history?period=today">Today</a>
+    <a href="/history?period=week">This Week</a>
+    <a href="/history?period=month">This Month</a>
+    <a href="/history?period=year">This Year</a>
+</div>
+
 <form method="GET" action="/search">
     <input type="date" name="date">
     <button type="submit">Search</button>
@@ -13,7 +21,9 @@
 
 <br>
 
-<form method="GET" action="/range">
+<a href="/export">📥 Export to CSV</a>
+
+<br>
     From: <input type="date" name="start">
     To: <input type="date" name="end">
     <button type="submit">Filter</button>
@@ -37,6 +47,7 @@
     <td>{{ t.amount }}</td>
     <td>{{ t.category }}</td>
     <td>{{ t.date }}</td>
+    <td><a href="/delete/{{ t.id }}">Delete</a></td>
 </tr>
 {% endfor %}
 </table>

@@ -1,11 +1,35 @@
 import os
+import sqlite3
 import mysql.connector
+from mysql.connector import Error
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        port=int(os.getenv("MYSQLPORT", "3306")),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE")
-    )
+    database_url = os.getenv('DATABASE_URL')
+    if database_url and database_url.startswith('mysql://'):
+        # Parse DATABASE_URL for MySQL
+        # Assuming format: mysql://user:password@host:port/database or mysql://user:password@host/database
+        import re
+        match = re.match(r'mysql://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/(.+)', database_url)
+        if match:
+            user, password, host, port, database = match.groups()
+            port = int(port) if port else 3306  # Default MySQL port
+            try:
+                conn = mysql.connector.connect(
+                    host=host,
+                    user=user,
+                    password=password,
+                    database=database,
+                    port=port
+                )
+                return conn, True
+            except Error as e:
+                print(f"Error connecting to MySQL: {e}")
+                return None, True
+        else:
+            print("Invalid DATABASE_URL format")
+            return None, True
+    else:
+        # Fallback to SQLite
+        conn = sqlite3.connect('expenses.db')
+        conn.row_factory = sqlite3.Row
+        return conn, False

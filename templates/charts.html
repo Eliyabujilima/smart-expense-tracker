@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker - Charts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="header">
+    <h2>📊 Spending Charts</h2>
+    <a href="/">⬅ Back to Dashboard</a>
+</div>
+
+<!-- ================= CHART ================= -->
+<h2>📊 Spending by Category</h2>
+
+<div style="width: 100%; max-width: 800px; margin: auto;">
+    <div style="margin-bottom: 40px;">
+        <canvas id="categoryChart"></canvas>
+    </div>
+    <div style="margin-bottom: 40px;">
+        <canvas id="incomeChart"></canvas>
+    </div>
+    <div>
+        <canvas id="trendChart"></canvas>
+    </div>
+</div>
+
+<script>
+    const budgetData = {{ budget_data | tojson }};
+    const trendData = {{ trend_data | tojson }};
+    const chartData = {{ chart_data | tojson }};
+    const income = {{ income }};
+    const expense = {{ expense }};
+
+    // Category spending as a bar chart (histogram style)
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(chartData),
+            datasets: [{
+                label: 'Amount (TSh)',
+                data: Object.values(chartData),
+                backgroundColor: ['#4BC0C0', '#36A2EB', '#FFCE56', '#FF6384', '#9966FF']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Category' }
+                },
+                y: {
+                    title: { display: true, text: 'Amount (TSh)' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Bar Chart for Income vs Expense
+    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+    new Chart(incomeCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Income', 'Expenses'],
+            datasets: [{
+                label: 'Total',
+                data: [income, expense],
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Line Chart for Monthly Spending Trend
+    const lineCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(trendData),
+            datasets: [{
+                label: 'Monthly Spending',
+                data: Object.values(trendData),
+                borderColor: '#FF6384',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

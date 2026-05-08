@@ -62,6 +62,7 @@
     <a href="{{ url_for('add_income') }}">➕ Income</a>
     <a href="/add">➖ Expense</a>
     <a href="/history">📜 History</a>
+    <a href="/charts">📊 Charts</a>
     <a href="/range">📊 Analysis</a>
     <a href="/search">🔍 Search</a>
     <a href="/calculator">🧮 Calculator</a>
@@ -114,15 +115,6 @@
 {% endfor %}
 </table>
 
-<!-- ================= CHART ================= -->
-<h2>📊 Spending by Category</h2>
-
-<div style="width: 350px; height: 350px; margin: auto;">
-    <canvas id="expenseChart"></canvas>
-    <canvas id="barChart"></canvas>
-    <canvas id="lineChart"></canvas>
-</div>
-
 <!-- ================= WARNINGS ================= -->
 <h2>⚠️ Budget Alerts</h2>
 
@@ -164,83 +156,5 @@
         </div>
     {% endfor %}
 </div>
-<!-- ================= CHART SCRIPT ================= -->
-<script>
-
-// =====================
-// CATEGORY PIE CHART
-// =====================
-const data = {{ chart_data | tojson }};
-
-new Chart(document.getElementById('expenseChart'), {
-    type: 'pie',
-    data: {
-        labels: Object.keys(data),
-        datasets: [{
-            data: Object.values(data),
-            backgroundColor: [
-                '#4CAF50',
-                '#2196F3',
-                '#FF9800',
-                '#E91E63',
-                '#9C27B0',
-                '#FFC107'
-            ]
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
-    }
-});
-
-
-// =====================
-// BAR CHART (Income vs Expense)
-// =====================
-new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-        labels: ['Income', 'Expenses'],
-        datasets: [{
-            data: [{{ income }}, {{ expense }}],
-            backgroundColor: ['#4CAF50', '#F44336']
-        }]
-    },
-    options: {
-        plugins: {
-            legend: { display: false }
-        }
-    }
-});
-
-
-// =====================
-// LINE CHART (TREND)
-// =====================
-const trend = {{ trend_data | tojson }};
-
-new Chart(document.getElementById('lineChart'), {
-    type: 'line',
-    data: {
-        labels: Object.keys(trend),
-        datasets: [{
-            label: "Expenses Trend",
-            data: Object.values(trend),
-            borderColor: '#2196F3',
-            fill: false,
-            tension: 0.3
-        }]
-    },
-    options: {
-        responsive: true
-    }
-});
-
-</script>
 </body>
 </html>
