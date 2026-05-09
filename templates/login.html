@@ -1,36 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Expense Tracker</title>
+    <title>Login - Smart Expense Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="auth-body">
 
 <div class="auth-container">
-    <h2>🔐 Login</h2>
+    <div class="logo-section">
+        <div class="logo">
+            <i class="fas fa-wallet"></i>
+        </div>
+        <h1>Smart Expense Tracker</h1>
+        <p class="tagline">This is the application that helps users manage their finances by tracking expenses, setting budgets, and analysing spending behaviour.</p>
+    </div>
 
-    <form method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-       <div style="position: relative;">
-       <input type="password" id="password" name="password" placeholder="Password" required style="width:100%; padding:10px;">
+    <div class="welcome-section">
+        <p class="description">
+            Welcome! To login, enter your details below and click the button.
+            If you don't have an account yet, register to get started.
+        </p>
+    </div>
 
-    <span onclick="togglePassword()" 
-          style="position:absolute; right:10px; top:10px; cursor:pointer;">
-        👁️
-    </span>
-</div>
+    <form method="POST" class="login-form">
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required>
+        </div>
 
-        <button type="submit">Login</button>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <span onclick="togglePassword()" class="password-toggle">
+                <i class="fas fa-eye" id="eye-icon"></i>
+            </span>
+        </div>
+
+        <button type="submit" class="login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+        </button>
     </form>
 
-    <p>Don't have an account?</p>
-    <a href="/register">Create Account</a>
+    <div class="divider">
+        <span>If you don't have an account, register below.</span>
+    </div>
+
+    <a href="/register" class="register-link">
+        <i class="fas fa-user-plus"></i>
+        Register
+    </a>
+
+    <div class="footer">
+        <p>Secure • Private • Smart</p>
+    </div>
 </div>
+
 <script>
 function togglePassword() {
     let pass = document.getElementById("password");
-    pass.type = pass.type === "password" ? "text" : "password";
+    let eyeIcon = document.getElementById("eye-icon");
+
+    if (pass.type === "password") {
+        pass.type = "text";
+        eyeIcon.className = "fas fa-eye-slash";
+    } else {
+        pass.type = "password";
+        eyeIcon.className = "fas fa-eye";
+    }
 }
 </script>
 </body>
